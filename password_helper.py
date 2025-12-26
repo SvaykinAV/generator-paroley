@@ -162,7 +162,7 @@ def proverit_nadzhnost(parol):
 
 # Основная функция с меню
 def main():
-    print("Простой менеджер паролей (школьная версия)")
+    print("Простой менеджер паролей")
     while True:
         print("\nЧто вы хотите сделать?")
         print("1. Создать пароль")
@@ -186,7 +186,7 @@ def main():
                 print("Пароль не введен.")
 
         elif vibor == "3":
-            servis = input("Название сервиса (например, YouTube): ").strip()
+            servis = input("Название сервиса: ").strip()
             if not servis:
                 print("Название не может быть пустым!")
                 continue
@@ -210,4 +210,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
