@@ -20,7 +20,6 @@ def sokhranit_parol(servis, parol):
     klyuch = zagruzit_klyuch()
     f = Fernet(klyuch)
     
-    # Загружаем старые данные, если файл существует
     if os.path.exists("passwords.txt"):
         with open("passwords.txt", "rb") as file:
             zashifrovanno = file.read()
@@ -31,11 +30,21 @@ def sokhranit_parol(servis, parol):
     else:
         staraya_infa = ""
 
-    # Добавляем новую запись
-    novaya_zapis = f"{servis}: {parol}\n"
-    vsya_infa = staraya_infa + novaya_zapis
+    # Проверим, не существует ли уже такой сервис
+    stroki = staraya_infa.strip().split('\n') if staraya_infa.strip() else []
+    novye_stroki = []
+    naydeno = False
+    for stroka in stroki:
+        if stroka.startswith(servis + ":"):
+            novye_stroki.append(f"{servis}: {parol}")
+            naydeno = True
+        else:
+            novye_stroki.append(stroka)
+    if not naydeno:
+        novye_stroki.append(f"{servis}: {parol}")
+    
+    vsya_infa = "\n".join(novye_stroki) + "\n"
 
-    # Шифруем и сохраняем обратно в файл
     zashifrovannaya_infa = f.encrypt(vsya_infa.encode())
     with open("passwords.txt", "wb") as file:
         file.write(zashifrovannaya_infa)
@@ -60,6 +69,40 @@ def pokazat_paroli():
     except Exception:
         print("Не удалось расшифровать. Возможно, файл поврежден.")
 
+# НОВАЯ ФУНКЦИЯ: получить пароль по названию сервиса
+def poluchit_parol_po_servisu():
+    if not os.path.exists("passwords.txt"):
+        print("Нет сохраненных паролей.")
+        return
+    klyuch = zagruzit_klyuch()
+    f = Fernet(klyuch)
+    with open("passwords.txt", "rb") as file:
+        zashifrovanno = file.read()
+    if not zashifrovanno:
+        print("Нет сохраненных паролей.")
+        return
+    try:
+        rasshifrovanno = f.decrypt(zashifrovanno).decode()
+    except Exception:
+        print("Не удалось расшифровать. Возможно, файл поврежден.")
+        return
+
+    servis = input("Введите название сервиса: ").strip()
+    if not servis:
+        print("Название сервиса не может быть пустым.")
+        return
+
+    stroki = rasshifrovanno.strip().split('\n')
+    for stroka in stroki:
+        if stroka.startswith(servis + ":"):
+            chast = stroka.split(": ", 1)
+            if len(chast) == 2:
+                nuzhnyy_parol = chast[1]
+                print(f"\nПароль для '{servis}': {nuzhnyy_parol}")
+                print("Скопируйте его вручную (выделите и нажмите Ctrl+C).")
+                return
+    print(f"Пароль для сервиса '{servis}' не найден.")
+
 # Функция для генерации нового пароля
 def sozdat_parol():
     print("\nНастройка генератора пароля")
@@ -81,7 +124,7 @@ def sozdat_parol():
         simvoly += string.digits
     if dobavit_zaglavnye:
         simvoly += string.ascii_uppercase
-    simvoly += string.ascii_lowercase  # строчные буквы всегда включены
+    simvoly += string.ascii_lowercase
     if dobavit_simvoly:
         simvoly += "!@#$%"
 
@@ -119,14 +162,15 @@ def proverit_nadzhnost(parol):
 
 # Основная функция с меню
 def main():
-    print("Простой менеджер паролей ")
+    print("Простой менеджер паролей (школьная версия)")
     while True:
         print("\nЧто вы хотите сделать?")
         print("1. Создать пароль")
         print("2. Проверить пароль на надежность")
         print("3. Сохранить пароль")
         print("4. Показать все пароли")
-        print("5. Выйти")
+        print("5. Получить пароль по названию")
+        print("6. Выйти")
 
         vibor = input("Введите номер действия: ").strip()
 
@@ -142,7 +186,7 @@ def main():
                 print("Пароль не введен.")
 
         elif vibor == "3":
-            servis = input("Название сервиса: ").strip()
+            servis = input("Название сервиса (например, YouTube): ").strip()
             if not servis:
                 print("Название не может быть пустым!")
                 continue
@@ -156,6 +200,9 @@ def main():
             pokazat_paroli()
 
         elif vibor == "5":
+            poluchit_parol_po_servisu()
+
+        elif vibor == "6":
             print("До свидания!")
             break
         else:
