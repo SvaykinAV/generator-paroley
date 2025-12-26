@@ -69,7 +69,7 @@ def pokazat_paroli():
     except Exception:
         print("Не удалось расшифровать. Возможно, файл поврежден.")
 
-# НОВАЯ ФУНКЦИЯ: получить пароль по названию сервиса
+#Получить пароль по названию сервиса
 def poluchit_parol_po_servisu():
     if not os.path.exists("passwords.txt"):
         print("Нет сохраненных паролей.")
@@ -210,3 +210,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
